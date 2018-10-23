@@ -4,30 +4,32 @@ Created on 02/12/2015
 @author: David
 '''
 
-import urllib
+import urllib.parse
+import urllib.request
 import json
 
 class BabelfyJSONKeys(object):
-    
-    
-    TOKEN_FRAGMENT = "tokenFragment"
-    CHAR_FRAGMENT = "charFragment"
-    CHAR_FRAGMENT_START = "start"
-    CHAR_FRAGMENT_END = "end"
-    BABEL_SYNSET_ID = "babelSynsetID"
-    DBPEDIA_URL = "DBpediaURL"
-    BABELNET_URL = "BabelNetURL"
-    SCORE = "score"
-    COHERENCE_SCORE = "coherenceScore" 
-    GLOBAL_SCORE ="globalScore"
-    SOURCE =  "source"
+    def __init__(self, token_fragment="tokenFragment", char_fragment="charFragment",
+        char_fragment_start="start", char_fragment_end="end", babel_synset_id="babelSynsetID",
+        dbpedia_url="DBpediaURL", babelnet_url="BabelNetURL", score="score",
+        coherence_score = "coherenceScore", global_score ="globalScore", source =  "source"):
+        self.TOKEN_FRAGMENT = token_fragment
+        self.CHAR_FRAGMENT = char_fragment
+        self.CHAR_FRAGMENT_START = char_fragment_start
+        self.CHAR_FRAGMENT_END = char_fragment_end
+        self.BABEL_SYNSET_ID = babel_synset_id
+        self.DBPEDIA_URL = dbpedia_url
+        self.BABELNET_URL = babelnet_url
+        self.SCORE = score
+        self.COHERENCE_SCORE = coherence_score
+        self.GLOBAL_SCORE = global_score
+        self.SOURCE = source
 
 class AnnTypeValues(object):
-    
     ALL = "ALL" #Disambiguates all
     CONCEPTS = "CONCEPTS" #Disambiguates concepts only
     NAMED_ENTITIES = "NAMED_ENTITIES" #Disambiguates named entities only
-    
+
 class AnnResValues(object):
     BN = "BN" #Annotate with BabelNet synsets
     WIKI = "WIKI" #Annotate with Wikipedia page titles
@@ -36,7 +38,7 @@ class AnnResValues(object):
 class MatchValues(object):
     EXACT_MATCHING = "EXACT_MATCHING" #Only exact matches are considered for disambiguation
     PARTIAL_MATCHING = "PARTIAL_MATCHING" #Both exact and partial matches (e.g.
-    
+
 class MCSValues(object):
     OFF = "OFF" #Do not use Most Common Sense
     ON = "ON" #Use Most Common Sense
@@ -47,94 +49,86 @@ class CandsValues(object):
     TOP = "TOP" #Return only the top ranked candidate for a fragment.
 
 class PosTagValues(object):
-    #Tokenize the input string by splitting all characters as single tokens 
+    #Tokenize the input string by splitting all characters as single tokens
     #(all tagged as nouns, so that we can disambiguate nouns).
-    CHAR_BASED_TOKENIZATION_ALL_NOUN = "CHAR_BASED_TOKENIZATION_ALL_NOUN" 
+    CHAR_BASED_TOKENIZATION_ALL_NOUN = "CHAR_BASED_TOKENIZATION_ALL_NOUN"
     INPUT_FRAGMENTS_AS_NOUNS = "INPUT_FRAGMENTS_AS_NOUNS" #Interprets input fragment words as nouns.
     NOMINALIZE_ADJECTIVES = "NOMINALIZE_ADJECTIVES"  #Interprets all adjectives as nouns.
     STANDARD = "STANDARD" #Standard PoS tagging process.
 
 class SemanticAnnotation(object):
-           
-    def __init__(self,babelfy_dict):
+
+    def __init__(self, babelfy_dict, babel_keys = BabelfyJSONKeys()):
         self.babelfy_dict = babelfy_dict
-    
+        self.babel_keys = babel_keys
+
     def babelfy_dict(self):
-        return self.babelfy_dict    
-    
+        return self.babelfy_dict
+
     def token_fragment(self):
-        return self.babelfy_dict[BabelfyJSONKeys.TOKEN_FRAGMENT]
-    
+        return self.babelfy_dict[self.babel_keys.TOKEN_FRAGMENT]
+
     def char_fragment(self):
-        return self.babelfy_dict[BabelfyJSONKeys.CHAR_FRAGMENT]
-    
+        return self.babelfy_dict[self.babel_keys.CHAR_FRAGMENT]
+
     def char_fragment_start(self):
-        return self.char_fragment()[BabelfyJSONKeys.CHAR_FRAGMENT_START]
-    
+        return self.char_fragment()[self.babel_keys.CHAR_FRAGMENT_START]
+
     def char_fragment_end(self):
-        return self.char_fragment()[BabelfyJSONKeys.CHAR_FRAGMENT_END]
-    
+        return self.char_fragment()[self.babel_keys.CHAR_FRAGMENT_END]
+
     def babel_synset_id(self):
-        return self.babelfy_dict[BabelfyJSONKeys.BABEL_SYNSET_ID]
-    
+        return self.babelfy_dict[self.babel_keys.BABEL_SYNSET_ID]
+
     def dbpedia_url(self):
-        return self.babelfy_dict[BabelfyJSONKeys.DBPEDIA_URL]
-    
+        return self.babelfy_dict[self.babel_keys.DBPEDIA_URL]
+
     def babelnet_url(self):
-        return self.babelfy_dict[BabelfyJSONKeys.BABELNET_URL]
-    
+        return self.babelfy_dict[self.babel_keys.BABELNET_URL]
+
     def coherence_score(self):
-        return self.babelfy_dict[BabelfyJSONKeys.COHERENCE_SCORE]
-    
+        return self.babelfy_dict[self.babel_keys.COHERENCE_SCORE]
+
     def global_score(self):
-        return self.babelfy_dict[BabelfyJSONKeys.GLOBAL_SCORE]
-    
+        return self.babelfy_dict[self.babel_keys.GLOBAL_SCORE]
+
     def source(self):
-        return self.babelfy_dict[BabelfyJSONKeys.SOURCE]
-    
+        return self.babelfy_dict[self.babel_keys.SOURCE]
+
+    def frag(self, input_text):
+        return input_text[self.char_fragment_start():self.char_fragment_end()+1]
+
     def postag(self):
         return self.babel_synset_id()[-1]
 
-    
     def pprint(self):
-        print self.babel_synset_id()
-        print self.babelnet_url()
-        print self.dbpedia_url()
-        print self.source()
+        print(self.babel_synset_id())
+        print(self.babelnet_url())
+        print(self.dbpedia_url())
+        print(self.source())
 
 class Babelfy(object):
+    def __init__(self):
+        self.PARAMETERS = [
+            "text", "lang", "key", "anntype", "annres",
+            "th", "match", "mcs", "dens", "cands",
+            "postag", "extaida"]
 
-    TEXT = "text"
-    LANG = "lang"
-    KEY = "key"
-    ANNTYPE= "annType"
-    ANNRES = "annRes"
-    TH = "th"
-    MATCH = "match"
-    MCS = "MCS"
-    DENS = "dens"
-    CANDS = "cands"
-    POSTAG = "postag"
-    EXTAIDA = "extAIDA"
-        
-    PARAMETERS = [TEXT,LANG,KEY,ANNTYPE,ANNRES,TH,MATCH,MCS,DENS,CANDS,POSTAG,EXTAIDA]
-    
-    API = "https://babelfy.io/v1/"
-    DISAMBIGUATE = "disambiguate?"
-    
-        
-    def disambiguate(self, text,lang,key, anntype=None, annres=None, th=None,
+        self.API_PATH = "https://babelfy.io/v1/"
+
+
+    def disambiguate(self, text, lang, key, anntype=None, annres=None, th=None,
                      match=None,mcs=None,dens=None,cands=None,postag=None,
                      extaida=None):
-        
+
+        DISAMBIGUATE = "disambiguate?"
+
         values = [text,lang,key,anntype,annres,th,match,mcs,dens,
                             cands,postag,extaida]
-        
-        query = urllib.urlencode({param:value for param,value in zip(self.PARAMETERS, values)
+
+        query = urllib.parse.urlencode({param:value for param,value in zip(self.PARAMETERS, values)
                          if value is not None})
 
-        print query
-        json_string = urllib.urlopen(self.API+self.DISAMBIGUATE+query).read()
-        #print json_string
+        json_string = urllib.request.urlopen(self.API_PATH+DISAMBIGUATE+query).read()
         babelfy_jsons = json.loads(json_string)
         return [SemanticAnnotation(babelfy_json) for babelfy_json in babelfy_jsons]
