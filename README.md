@@ -13,7 +13,7 @@ sudo python setup.py install
 
 # Causion
 Of course, you can use original code by changing setup.py in to following codes.
-It works in ubuntu. Unfortunately, it doesn't work in windows 10. I don't know something is wrong with.
+It works in ubuntu. Unfortunately, I don't know you can use in windows.
 ```
 from distutils.core import setup
 
@@ -24,7 +24,7 @@ except ImportError:
 
 setup(
   name = 'pybabelfy',
-  packages = ['pybabelfy'], # this must be the same as the name above
+  ppackages = ['pybabelfy', 'build/lib/pybabelfy'], # this must be the same as the name above
   version = '0.1',
   description = 'A Python interface for Babelfy',
   author = 'David Vilares',
